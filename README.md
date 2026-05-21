@@ -1,6 +1,8 @@
 # structurizr-mcp
 
-An MCP server that lets Claude read, write, validate, and export [Structurizr](https://structurizr.com) architecture models. Designed to work alongside [Structurizr Lite](https://docs.structurizr.com/lite) running locally via Docker.
+An MCP server that lets Claude read, write, validate, and export [Structurizr](https://structurizr.com) architecture models. Works with the [Structurizr local tool](https://docs.structurizr.com/local) (`structurizr/structurizr`) — the successor to Structurizr Lite.
+
+> **Note:** Structurizr Lite (`structurizr/lite`) was discontinued in early 2026. The replacement is the unified `structurizr/structurizr` Docker image run in `local` mode. The DSL is unchanged.
 
 ## What it does
 
@@ -11,19 +13,19 @@ An MCP server that lets Claude read, write, validate, and export [Structurizr](h
 | `list_dsl` | List `.dsl` files in a directory |
 | `validate` | Validate a DSL file using `structurizr-cli` |
 | `export` | Export diagrams to Mermaid, SVG, PNG, PlantUML |
-| `workspace_json` | Fetch the full architecture model from Structurizr Lite's REST API |
-| `structurizr_status` | Check if Structurizr Lite is running |
+| `workspace_json` | Fetch the full architecture model from the Structurizr REST API |
+| `structurizr_status` | Check if Structurizr is running |
 
 ## Prerequisites
 
-### 1. Docker (for Structurizr Lite)
+### 1. Docker (for the Structurizr local tool)
 
-Start Structurizr Lite pointing at your architecture directory:
+Start Structurizr pointing at your architecture directory:
 
 ```bash
 docker run -it --rm -p 8080:8080 \
   -v $PWD/<project-name>:/usr/local/structurizr \
-  structurizr/lite:latest
+  structurizr/structurizr local
 ```
 
 Open http://localhost:8080 in your browser to view diagrams.
@@ -47,7 +49,7 @@ git clone https://github.com/ksgit/structurizr-mcp
 cd structurizr-mcp
 ```
 
-That's it — `uv` will handle the Python environment automatically on first run.
+No separate install step — `uv` handles the Python environment automatically on first run.
 
 ## Connecting to Claude Code
 
@@ -84,10 +86,13 @@ All configuration is via environment variables:
 | Variable | Default | Description |
 |---|---|---|
 | `STRUCTURIZR_WORKSPACE_DIR` | `.` | Directory containing `.dsl` files |
-| `STRUCTURIZR_URL` | `http://localhost:8080` | Structurizr Lite base URL |
-| `STRUCTURIZR_API_KEY` | _(none)_ | Basic auth username (if enabled) |
-| `STRUCTURIZR_API_SECRET` | _(none)_ | Basic auth password |
+| `STRUCTURIZR_URL` | `http://localhost:8080` | Structurizr base URL |
+| `STRUCTURIZR_WORKSPACE_ID` | `1` | Workspace ID (local mode always uses `1`) |
+| `STRUCTURIZR_API_KEY` | _(none)_ | API key for HMAC authentication (optional in local mode) |
+| `STRUCTURIZR_API_SECRET` | _(none)_ | API secret for HMAC authentication (optional in local mode) |
 | `STRUCTURIZR_CLI` | `structurizr-cli` | Path to the structurizr-cli binary |
+
+Authentication is only required if you have configured API credentials in Structurizr. For local mode with no credentials configured, leave `STRUCTURIZR_API_KEY` and `STRUCTURIZR_API_SECRET` unset.
 
 ## Example usage
 
