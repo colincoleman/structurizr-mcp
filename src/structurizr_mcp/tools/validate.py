@@ -2,20 +2,26 @@ import subprocess
 from pathlib import Path
 from structurizr_mcp.config import config
 from structurizr_mcp.tools.dsl import _resolve
+from structurizr_mcp.tools.export import DOCKER_IMAGE, CONTAINER_WORKSPACE, _container_path
 
 
 def validate_workspace(path: str) -> dict:
     """
-    Validate a Structurizr DSL file using structurizr-cli.
-
+    Validate a Structurizr DSL file via Docker (structurizr/structurizr validate).
     Returns a dict with 'valid' (bool), 'errors' (list of str), and 'output' (raw CLI output).
     """
+    workspace_dir = Path(config.workspace_dir).resolve()
     resolved = _resolve(path)
     if not resolved.exists():
         raise FileNotFoundError(f"File not found: {resolved}")
 
     result = subprocess.run(
-        [config.cli_path, "validate", "--workspace", str(resolved)],
+        [
+            "docker", "run", "--rm",
+            "-v", f"{workspace_dir}:{CONTAINER_WORKSPACE}",
+            DOCKER_IMAGE, "validate",
+            "-w", _container_path(resolved, workspace_dir),
+        ],
         capture_output=True,
         text=True,
     )

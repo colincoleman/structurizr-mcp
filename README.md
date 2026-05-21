@@ -4,6 +4,8 @@ An MCP server that lets Claude read, write, validate, and export [Structurizr](h
 
 > **Note:** Structurizr Lite (`structurizr/lite`) was discontinued in early 2026. The replacement is the unified `structurizr/structurizr` Docker image run in `local` mode. The DSL is unchanged.
 
+**The only runtime dependency is Docker** — `validate` and `export` run via `docker run structurizr/structurizr` rather than requiring a separately installed CLI.
+
 ## What it does
 
 | Tool | Description |
@@ -11,14 +13,16 @@ An MCP server that lets Claude read, write, validate, and export [Structurizr](h
 | `read_dsl` | Read a `.dsl` workspace file |
 | `write_dsl` | Create or update a `.dsl` file |
 | `list_dsl` | List `.dsl` files in a directory |
-| `validate` | Validate a DSL file using `structurizr-cli` |
-| `export` | Export diagrams to Mermaid, SVG, PNG, PlantUML |
+| `validate` | Validate a DSL file via Docker |
+| `export` | Export diagrams to Mermaid, SVG, PNG, PlantUML, JSON |
 | `workspace_json` | Fetch the full architecture model from the Structurizr REST API |
 | `structurizr_status` | Check if Structurizr is running |
 
 ## Prerequisites
 
-### 1. Docker (for the Structurizr local tool)
+### 1. Docker
+
+Both the Structurizr viewer and the validate/export tools run via Docker. No other tools need to be installed.
 
 Start Structurizr pointing at your architecture directory:
 
@@ -30,11 +34,9 @@ docker run -it --rm -p 8080:8080 \
 
 Open http://localhost:8080 in your browser to view diagrams.
 
-### 2. structurizr-cli (for validate and export)
+> SVG and PNG exports require Structurizr to be running. All other export formats (Mermaid, PlantUML, JSON, etc.) work without it.
 
-Download the CLI from the [Structurizr CLI releases](https://github.com/structurizr/cli/releases) and place it on your `PATH`, or set `STRUCTURIZR_CLI` to the full path.
-
-### 3. uv
+### 2. uv
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if you don't have it:
 
@@ -86,11 +88,10 @@ All configuration is via environment variables:
 | Variable | Default | Description |
 |---|---|---|
 | `STRUCTURIZR_WORKSPACE_DIR` | `.` | Directory containing `.dsl` files |
-| `STRUCTURIZR_URL` | `http://localhost:8080` | Structurizr base URL |
+| `STRUCTURIZR_URL` | `http://localhost:8080` | Structurizr base URL (used for SVG/PNG export and API tools) |
 | `STRUCTURIZR_WORKSPACE_ID` | `1` | Workspace ID (local mode always uses `1`) |
 | `STRUCTURIZR_API_KEY` | _(none)_ | API key for HMAC authentication (optional in local mode) |
 | `STRUCTURIZR_API_SECRET` | _(none)_ | API secret for HMAC authentication (optional in local mode) |
-| `STRUCTURIZR_CLI` | `structurizr-cli` | Path to the structurizr-cli binary |
 
 Authentication is only required if you have configured API credentials in Structurizr. For local mode with no credentials configured, leave `STRUCTURIZR_API_KEY` and `STRUCTURIZR_API_SECRET` unset.
 
@@ -100,7 +101,7 @@ Once connected, you can ask Claude things like:
 
 - "Read the current workspace.dsl and explain the architecture"
 - "Add a new microservice called PaymentService to the architecture"
-- "Export all diagrams as Mermaid so I can add them to the docs"
+- "Export all diagrams as SVG and save them to diagrams/svg/"
 - "Validate the workspace and fix any errors"
 - "What containers exist in the current workspace?"
 
