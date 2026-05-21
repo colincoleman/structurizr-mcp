@@ -17,7 +17,7 @@ def read_dsl(path: str) -> str:
 def write_dsl(path: str, content: str) -> str:
     """
     Write or overwrite a Structurizr DSL file. Path is relative to STRUCTURIZR_WORKSPACE_DIR.
-    Creates parent directories as needed. Structurizr Lite will pick up the change automatically
+    Creates parent directories as needed. Structurizr will pick up the change automatically
     if it is currently running.
     """
     return write_dsl_file(path, content)
@@ -35,9 +35,9 @@ def list_dsl(directory: str = ".") -> list[str]:
 @mcp.tool()
 def validate(path: str) -> dict:
     """
-    Validate a Structurizr DSL file using structurizr-cli.
+    Validate a Structurizr DSL file via Docker (structurizr/structurizr validate).
     Returns {valid: bool, errors: [str], output: str}.
-    Requires structurizr-cli to be installed and on PATH (or set STRUCTURIZR_CLI).
+    Requires Docker to be running.
     """
     return validate_workspace(path)
 
@@ -45,16 +45,18 @@ def validate(path: str) -> dict:
 @mcp.tool()
 def export(path: str, format: str = "mermaid", output_dir: str | None = None) -> dict:
     """
-    Export diagrams from a DSL file using structurizr-cli.
+    Export diagrams from a DSL file via Docker (structurizr/structurizr export).
 
     Args:
         path: Path to the .dsl file (relative to STRUCTURIZR_WORKSPACE_DIR).
-        format: Output format. One of: mermaid (default), plantuml, c4plantuml, svg, png, dot.
+        format: Output format. One of: mermaid (default), plantuml, c4plantuml,
+                svg, png, json, static, websequencediagrams.
+                SVG and PNG require Structurizr to be running at STRUCTURIZR_URL.
         output_dir: Where to write exported files (relative to STRUCTURIZR_WORKSPACE_DIR).
                     Defaults to the same directory as the DSL file.
 
     Returns {files: [str], output: str}.
-    Mermaid output is ideal for embedding in markdown documentation.
+    Requires Docker to be running.
     """
     return export_diagrams(path, format, output_dir)
 
@@ -62,9 +64,9 @@ def export(path: str, format: str = "mermaid", output_dir: str | None = None) ->
 @mcp.tool()
 def workspace_json() -> dict:
     """
-    Fetch the current workspace model from Structurizr Lite's REST API (GET /api/workspace).
+    Fetch the current workspace model from Structurizr's REST API (GET /api/workspace).
     Returns the full architecture model as JSON: all elements, relationships, and views.
-    Requires Structurizr Lite to be running (STRUCTURIZR_URL, default http://localhost:8080).
+    Requires Structurizr to be running (STRUCTURIZR_URL, default http://localhost:8080).
     """
     return get_workspace_json()
 
@@ -72,7 +74,7 @@ def workspace_json() -> dict:
 @mcp.tool()
 def structurizr_status() -> dict:
     """
-    Check whether Structurizr Lite is reachable at the configured URL.
+    Check whether Structurizr is reachable at the configured URL.
     Returns {reachable: bool, url: str, message: str}.
     """
     return get_structurizr_status()
