@@ -4,7 +4,7 @@ An MCP server that lets Claude read, write, validate, and export [Structurizr](h
 
 > **Note:** Structurizr Lite (`structurizr/lite`) was discontinued in early 2026. The replacement is the unified `structurizr/structurizr` Docker image run in `local` mode. The DSL is unchanged.
 
-**The only runtime dependency is Docker** — `validate` and `export` run via `docker run structurizr/structurizr` rather than requiring a separately installed CLI.
+**The only runtime dependency is Docker.** Validate and most export formats run via `structurizr/structurizr`. SVG/PNG export additionally uses `mcr.microsoft.com/playwright` to capture diagrams exactly as they appear in the Structurizr web UI — both images are pulled automatically on first use.
 
 ## What it does
 
@@ -34,7 +34,7 @@ docker run -it --rm -p 8080:8080 \
 
 Open http://localhost:8080 in your browser to view diagrams.
 
-> SVG and PNG exports require Structurizr to be running. All other export formats (Mermaid, PlantUML, JSON, etc.) work without it.
+> **SVG and PNG exports** require Structurizr to be running and use a Playwright headless browser (`mcr.microsoft.com/playwright`) to capture diagrams exactly as they appear in the web UI. All other export formats (Mermaid, PlantUML, JSON, etc.) work without a running server.
 
 ### 2. uv
 

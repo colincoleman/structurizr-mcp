@@ -45,13 +45,16 @@ def validate(path: str) -> dict:
 @mcp.tool()
 def export(path: str, format: str = "mermaid", output_dir: str | None = None) -> dict:
     """
-    Export diagrams from a DSL file via Docker (structurizr/structurizr export).
+    Export diagrams from a DSL file via Docker.
 
     Args:
         path: Path to the .dsl file (relative to STRUCTURIZR_WORKSPACE_DIR).
-        format: Output format. One of: mermaid (default), plantuml, c4plantuml,
-                svg, png, json, static, websequencediagrams.
-                SVG and PNG require Structurizr to be running at STRUCTURIZR_URL.
+        format: Output format. One of: mermaid (default), plantuml, svg, png,
+                json, static, websequencediagrams.
+                SVG and PNG capture diagrams exactly as they appear in the Structurizr
+                web UI using a Playwright headless browser — requires Structurizr to be
+                running at STRUCTURIZR_URL and the playwright Docker image to be available.
+                All other formats work without a running server.
         output_dir: Where to write exported files (relative to STRUCTURIZR_WORKSPACE_DIR).
                     Defaults to the same directory as the DSL file.
 
