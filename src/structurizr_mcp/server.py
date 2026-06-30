@@ -8,60 +8,70 @@ mcp = FastMCP("structurizr")
 
 
 @mcp.tool()
-def read_dsl(path: str) -> str:
-    """Read a Structurizr DSL file. Path is relative to STRUCTURIZR_WORKSPACE_DIR."""
-    return read_dsl_file(path)
+def read_dsl(path: str, workspace: str | None = None) -> str:
+    """
+    Read a Structurizr DSL file. Path is relative to the selected workspace.
+    `workspace` selects a sub-directory under STRUCTURIZR_WORKSPACE_DIR (defaults to
+    STRUCTURIZR_DEFAULT_WORKSPACE, then to the base directory).
+    """
+    return read_dsl_file(path, workspace)
 
 
 @mcp.tool()
-def write_dsl(path: str, content: str) -> str:
+def write_dsl(path: str, content: str, workspace: str | None = None) -> str:
     """
-    Write or overwrite a Structurizr DSL file. Path is relative to STRUCTURIZR_WORKSPACE_DIR.
+    Write or overwrite a Structurizr DSL file. Path is relative to the selected workspace.
     Creates parent directories as needed. Structurizr will pick up the change automatically
-    if it is currently running.
+    if it is currently running. `workspace` selects a sub-directory under
+    STRUCTURIZR_WORKSPACE_DIR (defaults to STRUCTURIZR_DEFAULT_WORKSPACE, then to the base).
     """
-    return write_dsl_file(path, content)
+    return write_dsl_file(path, content, workspace)
 
 
 @mcp.tool()
-def list_dsl(directory: str = ".") -> list[str]:
+def list_dsl(directory: str = ".", workspace: str | None = None) -> list[str]:
     """
-    List all .dsl files under a directory. Path is relative to STRUCTURIZR_WORKSPACE_DIR.
-    Returns paths relative to STRUCTURIZR_WORKSPACE_DIR.
+    List all .dsl files under a directory. Path is relative to the selected workspace.
+    Returns paths relative to that workspace. `workspace` selects a sub-directory under
+    STRUCTURIZR_WORKSPACE_DIR (defaults to STRUCTURIZR_DEFAULT_WORKSPACE, then to the base).
     """
-    return list_dsl_files(directory)
+    return list_dsl_files(directory, workspace)
 
 
 @mcp.tool()
-def validate(path: str) -> dict:
+def validate(path: str, workspace: str | None = None) -> dict:
     """
     Validate a Structurizr DSL file via Docker (structurizr/structurizr validate).
     Returns {valid: bool, errors: [str], output: str}.
+    `workspace` selects a sub-directory under STRUCTURIZR_WORKSPACE_DIR (defaults to
+    STRUCTURIZR_DEFAULT_WORKSPACE, then to the base directory).
     Requires Docker to be running.
     """
-    return validate_workspace(path)
+    return validate_workspace(path, workspace)
 
 
 @mcp.tool()
-def export(path: str, format: str = "mermaid", output_dir: str | None = None) -> dict:
+def export(path: str, format: str = "mermaid", output_dir: str | None = None, workspace: str | None = None) -> dict:
     """
     Export diagrams from a DSL file via Docker.
 
     Args:
-        path: Path to the .dsl file (relative to STRUCTURIZR_WORKSPACE_DIR).
+        path: Path to the .dsl file (relative to the selected workspace).
         format: Output format. One of: mermaid (default), plantuml, svg, png,
                 json, static, websequencediagrams.
                 SVG and PNG capture diagrams exactly as they appear in the Structurizr
                 web UI using a Playwright headless browser — requires Structurizr to be
                 running at STRUCTURIZR_URL and the playwright Docker image to be available.
                 All other formats work without a running server.
-        output_dir: Where to write exported files (relative to STRUCTURIZR_WORKSPACE_DIR).
+        output_dir: Where to write exported files (relative to the selected workspace).
                     Defaults to the same directory as the DSL file.
+        workspace: Sub-directory under STRUCTURIZR_WORKSPACE_DIR to target. Defaults to
+                   STRUCTURIZR_DEFAULT_WORKSPACE, then to the base directory.
 
     Returns {files: [str], output: str}.
     Requires Docker to be running.
     """
-    return export_diagrams(path, format, output_dir)
+    return export_diagrams(path, format, output_dir, workspace)
 
 
 @mcp.tool()

@@ -87,13 +87,37 @@ All configuration is via environment variables:
 
 | Variable | Default | Description |
 |---|---|---|
-| `STRUCTURIZR_WORKSPACE_DIR` | `.` | Directory containing `.dsl` files |
+| `STRUCTURIZR_WORKSPACE_DIR` | `.` | Base directory that bounds all file access (the sandbox root) |
+| `STRUCTURIZR_DEFAULT_WORKSPACE` | _(none)_ | Sub-directory under the base used when a tool call omits `workspace` |
 | `STRUCTURIZR_URL` | `http://localhost:8080` | Structurizr base URL (used for SVG/PNG export and API tools) |
 | `STRUCTURIZR_WORKSPACE_ID` | `1` | Workspace ID (local mode always uses `1`) |
 | `STRUCTURIZR_API_KEY` | _(none)_ | API key for HMAC authentication (optional in local mode) |
 | `STRUCTURIZR_API_SECRET` | _(none)_ | API secret for HMAC authentication (optional in local mode) |
 
 Authentication is only required if you have configured API credentials in Structurizr. For local mode with no credentials configured, leave `STRUCTURIZR_API_KEY` and `STRUCTURIZR_API_SECRET` unset.
+
+### Multiple workspaces
+
+When several Structurizr workspaces live side by side (e.g. `repo/projectA/workspace.dsl` and
+`repo/projectB/workspace.dsl`), point `STRUCTURIZR_WORKSPACE_DIR` at their **common parent** and
+select one per call with the `workspace` argument that `read_dsl`, `write_dsl`, `list_dsl`,
+`validate`, and `export` all accept:
+
+```jsonc
+"env": {
+  "STRUCTURIZR_WORKSPACE_DIR": "/path/to/repo",
+  "STRUCTURIZR_DEFAULT_WORKSPACE": "projectA"   // used when `workspace` is omitted
+}
+```
+
+- `validate(path="workspace.dsl")` → validates `projectA/workspace.dsl` (the default)
+- `validate(path="workspace.dsl", workspace="projectB")` → validates `projectB/workspace.dsl`
+- `export(path="workspace.dsl", format="svg", output_dir="diagrams/svg", workspace="projectB")`
+  writes into `projectB/diagrams/svg/`
+
+`path`, `output_dir`, and `workspace` are all resolved under the base and may not escape it.
+For SVG/PNG, the running `structurizr local` container must be serving the same workspace you
+target (its `-v` mount selects which workspace the web UI renders).
 
 ## Example usage
 

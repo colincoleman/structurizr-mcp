@@ -5,13 +5,13 @@ from structurizr_mcp.tools.dsl import _resolve
 from structurizr_mcp.tools.export import DOCKER_IMAGE, CONTAINER_WORKSPACE, _container_path
 
 
-def validate_workspace(path: str) -> dict:
+def validate_workspace(path: str, workspace: str | None = None) -> dict:
     """
     Validate a Structurizr DSL file via Docker (structurizr/structurizr validate).
     Returns a dict with 'valid' (bool), 'errors' (list of str), and 'output' (raw CLI output).
     """
-    workspace_dir = Path(config.workspace_dir).resolve()
-    resolved = _resolve(path)
+    workspace_dir = config.effective_workspace_dir(workspace)
+    resolved = _resolve(path, workspace)
     if not resolved.exists():
         raise FileNotFoundError(f"File not found: {resolved}")
 

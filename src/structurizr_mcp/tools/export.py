@@ -194,7 +194,7 @@ const proxyServer = net.createServer(socket => {{
     return {"files": files, "output": output}
 
 
-def export_diagrams(path: str, format: str = "mermaid", output_dir: str | None = None) -> dict:
+def export_diagrams(path: str, format: str = "mermaid", output_dir: str | None = None, workspace: str | None = None) -> dict:
     """
     Export diagrams from a Structurizr DSL file.
 
@@ -206,11 +206,13 @@ def export_diagrams(path: str, format: str = "mermaid", output_dir: str | None =
     as they appear in the web UI. Both Docker images must be available.
 
     Args:
-        path: Path to the .dsl file (relative to STRUCTURIZR_WORKSPACE_DIR).
+        path: Path to the .dsl file (relative to the selected workspace).
         format: Output format — mermaid (default), plantuml, svg, png,
                 json, static, websequencediagrams.
-        output_dir: Where to write exported files (relative to STRUCTURIZR_WORKSPACE_DIR).
+        output_dir: Where to write exported files (relative to the selected workspace).
                     Defaults to the same directory as the DSL file.
+        workspace: Sub-directory under STRUCTURIZR_WORKSPACE_DIR to target. Defaults to
+                   STRUCTURIZR_DEFAULT_WORKSPACE, then to the base directory.
 
     Returns a dict with 'files' (list of output paths) and 'output' (raw CLI output).
     """
@@ -218,15 +220,15 @@ def export_diagrams(path: str, format: str = "mermaid", output_dir: str | None =
     if fmt not in SUPPORTED_FORMATS:
         raise ValueError(f"Unsupported format '{format}'. Choose from: {', '.join(SUPPORTED_FORMATS)}")
 
-    workspace_dir = Path(config.workspace_dir).resolve()
-    resolved = _resolve(path)
+    workspace_dir = config.effective_workspace_dir(workspace)
+    resolved = _resolve(path, workspace)
     if not resolved.exists():
         raise FileNotFoundError(f"File not found: {resolved}")
 
     if output_dir is None:
         out_resolved = resolved.parent
     else:
-        out_resolved = _resolve(output_dir)
+        out_resolved = _resolve(output_dir, workspace)
         out_resolved.mkdir(parents=True, exist_ok=True)
 
     if fmt in SERVER_FORMATS:
